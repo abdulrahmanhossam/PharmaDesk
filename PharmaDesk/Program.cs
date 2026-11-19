@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PharmaDesk.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace PharmaDesk
 {
@@ -9,15 +10,29 @@ namespace PharmaDesk
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // 1. Add services to the container.
             builder.Services.AddControllersWithViews();
+
             // تسجيل SaleService
             builder.Services.AddScoped<PharmaDesk.Services.SaleService>();
+
             // Register DbContext
             builder.Services.AddDbContext<PharmaDeskContext>(options =>
-             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); 
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            var app = builder.Build();
+            // 👇👇👇 هنا المكان الصح لإعدادات الـ Authentication (قبل الـ Build)
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/AccessDenied";
+                    options.ExpireTimeSpan = TimeSpan.FromHours(3);
+                    options.SlidingExpiration = true;
+                });
+            // 👆👆👆
+
+            var app = builder.Build(); // هنا بنقفل الخدمات
+
             // تشغيل Seeder عند بدء التطبيق
             using (var scope = app.Services.CreateScope())
             {
@@ -30,12 +45,33 @@ namespace PharmaDesk
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
+            app.UseAuthentication(); // لازم تكون قبل UseAuthorization
+
+            // الميدل وير بتاعك لحماية الصفحات
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/Account") ||
+                    context.Request.Path.StartsWithSegments("/css") ||
+                    context.Request.Path.StartsWithSegments("/js") ||
+                    context.Request.Path.StartsWithSegments("/lib"))
+                {
+                    await next();
+                    return;
+                }
+
+                if (!context.User.Identity.IsAuthenticated)
+                {
+                    context.Response.Redirect("/Account/Login");
+                    return;
+                }
+                await next();
+            });
 
             app.UseAuthorization();
 

@@ -1,0 +1,49 @@
+﻿@model PharmaDesk.ViewModels.TeamMemberViewModel
+
+@{
+    ViewData["Title"] = "Add Team Member";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Add Team Member</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<div class="card p-3" style="max-width: 600px;">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label">Full Name *</label>
+            <input asp-for="FullName" class="form-control" placeholder="e.g. Ahmed Mohamed" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Role" class="form-label">Role *</label>
+            <select asp-for="Role" class="form-select">
+                <option value="Staff">Staff</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="NewPin" class="form-label">PIN *</label>
+            <input asp-for="NewPin" type="password" class="form-control" placeholder="4 to 10 characters" />
+            <span asp-validation-for="NewPin" class="text-danger"></span>
+        </div>
+
+        <div class="form-check mb-4">
+            <input asp-for="IsActive" class="form-check-input" checked />
+            <label asp-for="IsActive" class="form-check-label">Active</label>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

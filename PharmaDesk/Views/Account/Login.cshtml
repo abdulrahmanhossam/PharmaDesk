@@ -1,0 +1,61 @@
+﻿@model PharmaDesk.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null; // لا نريد القائمة الجانبية في صفحة الدخول
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - PharmaDesk</title>
+    <link href="~/lib/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { width: 100%; max-width: 400px; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: white; }
+        .brand { text-align: center; font-size: 1.5rem; font-weight: bold; color: #2e7d32; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="brand">
+            <i class="bi bi-capsule"></i> PharmaDesk
+        </div>
+        
+        <h5 class="text-center mb-4">Sign In</h5>
+
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="TeamMemberId" class="form-label">Select User</label>
+                <select asp-for="TeamMemberId" class="form-select">
+                    <option value="">-- Choose your name --</option>
+                    @foreach (var user in Model.Users)
+                    {
+                        <option value="@user.Id">@user.FullName (@user.Role)</option>
+                    }
+                </select>
+                <span asp-validation-for="TeamMemberId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Pin" class="form-label">PIN</label>
+                <input asp-for="Pin" type="password" class="form-control form-control-lg text-center" 
+                       placeholder="Enter your PIN" autocomplete="off" />
+                <span asp-validation-for="Pin" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 btn-lg">Login</button>
+        </form>
+    </div>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>
