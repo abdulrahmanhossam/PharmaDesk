@@ -1,67 +1,55 @@
-# Contributing to PharmaDesk
+# 🤝 How We Work Together (Abdulrahman & Ziad)
 
-Thank you for contributing to **PharmaDesk**! This document outlines our collaborative standards, code quality expectations, and contribution process.
-
----
-
-## 📜 Core Principles & Hard Constraints
-
-1. **Offline-First Non-Negotiable**: PharmaDesk must run 100% locally with zero external network connectivity. Never introduce external CDN links (`https://cdn...`) for scripts, fonts, or stylesheets. All assets must reside in `wwwroot/lib/`.
-2. **ACID Financial Invariants**: Always maintain transactional integrity. Any operation touching inventory balances, sales lines, or purchase batches must execute within an explicit database transaction (`IDbContextTransaction`).
-3. **Strict Role Separation**: Every administrative endpoint must be protected on the server with `[Authorize(Roles = "Admin")]`. Never rely on client-side menu hiding alone.
-4. **Never Commit Secrets**: Never commit passwords, API keys, or plaintext connection strings.
-5. **No Direct Commits to `main`**: All code enters `main` exclusively through pull requests.
+This is a private repository for **Abdulrahman** and **Ziad**. Keep development simple, friendly, and conflict-free.
 
 ---
 
-## 🌿 Branching Strategy
+## 🎯 Ground Rules
 
-Branch names must strictly adhere to:
-```
-<type>/<short-kebab-description>
-```
-- `feat/daily-sales-report` (new user-facing capability)
-- `fix/lockout-utc-timestamp` (bug fix)
-- `docs/add-api-specs` (documentation updates)
-- `refactor/extract-stock-service` (refactoring without behavioral change)
-- `test/fefo-allocation-tests` (tests)
-- `chore/cleanup-dead-models` (tooling or dependency tasks)
+1. **Never break `main`**: Always verify `dotnet build` passes with 0 errors before merging.
+2. **Branch before coding**: Never push directly to `main`. Create a short branch:
+   - `feature/name` for new features (e.g. `feature/daily-sales`)
+   - `fix/name` for bug fixes (e.g. `fix/hardcoded-cashier-id`)
+3. **Keep PRs small**: Tackle one task or bug at a time so your friend can review it in 2 minutes.
+4. **Clean commit messages**: Use simple prefixes: `feat:`, `fix:`, `docs:`, `chore:`.
 
 ---
 
-## ✍️ Conventional Commits
+## 🗂️ Task & File Ownership Split
 
-All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
-```text
-<type>(<scope>): <subject in imperative present tense>
+To make sure we never edit the same files at the same time:
 
-[optional body explaining context, why, and what]
-
-[optional footer: Closes #12]
-```
-
-### Examples:
-- `feat(reports): implement daily sales reconciliation report`
-- `fix(auth): resolve hardcoded cashier id in sale checkout`
-- `docs(data-model): add corrected Mermaid ERD and data dictionary`
-- `refactor(inventory): extract batch deduction logic into StockService`
+| Domain | Owner | Key Controllers & Files |
+|---|---|---|
+| **Security & Auth** | **Abdulrahman** | `AccountController`, PIN lockout, role checks |
+| **Sales History & Reporting** | **Abdulrahman** | `SaleController.History`, `ReportController`, `DailySales.cshtml` |
+| **Master Catalog & DB** | **Abdulrahman** | `CategoryController`, `SupplierController`, EF Core migrations |
+| **Inventory & FEFO** | **Ziad** | `StockService.cs`, `Batches`, Expiry alerts |
+| **Purchasing & Invoices** | **Ziad** | `PurchaseController.cs`, `Views/Purchase/*` |
+| **Backups & Auditing** | **Ziad** | `BackupService.cs`, `BackupController.cs`, `ActivityLogController.cs` |
 
 ---
 
-## 🛠 Pull Request Checklist
+## 🛠️ Step-by-Step Feature Workflow
 
-Before submitting a Pull Request, verify the following:
-
-- [ ] **Clean Build**: `dotnet build` succeeds with 0 errors and 0 new warnings.
-- [ ] **Business Rules Uphold**: FEFO deduction, non-negative inventory, and unexpired batch rules are strictly enforced.
-- [ ] **Authorization Gates**: Any administrative controller or action has `[Authorize(Roles = "Admin")]`.
-- [ ] **Audit Trail**: State-mutating events are logged to `ActivityLog`.
-- [ ] **No Secrets**: `appsettings.json` contains no production credentials.
-- [ ] **Templates Used**: PR description fills out [.github/pull_request_template.md](.github/pull_request_template.md).
-- [ ] **Issue Linked**: PR links to a tracking issue (`Closes #123`).
-
----
-
-## 👥 Splitting Work Between Developers
-
-Work is organized strictly across separate files, controllers, services, and views following the build order in [docs/08-development-workflow.md](docs/08-development-workflow.md). Please coordinate on GitHub Issues before commencing work on unassigned tasks.
+1. **Pick an issue** from the [Roadmap / Backlog](file:///home/abdulrahman/projects/PharmaDesk/docs/10-backlog.md).
+2. **Create a branch**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/your-task-name
+   ```
+3. **Implement the code**:
+   - Keep business logic in services (`Services/`), not inside controllers.
+   - Guard all Admin actions with `[Authorize(Roles = "Admin")]`.
+4. **Test the build**:
+   ```bash
+   dotnet build PharmaDesk/PharmaDesk.csproj
+   ```
+5. **Commit and push**:
+   ```bash
+   git add .
+   git commit -m "feat: implement daily sales summary screen"
+   git push -u origin feature/your-task-name
+   ```
+6. **Open a PR**: Send the link to your friend for a quick thumbs-up and merge!
